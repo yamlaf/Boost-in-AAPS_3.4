@@ -11,6 +11,9 @@ on:
         options:
           - fullRelease
           - fullDebug
+          - fullbRelease
+          - fullcRelease
+          - fulldRelease
           - aapsclientRelease
           - aapsclientDebug
           - aapsclient2Release
@@ -164,6 +167,9 @@ jobs:
           VARIANT_TYPE=$(echo "$BUILD_VARIANT" | grep -oE '(Release|Debug)$' | tr '[:upper:]' '[:lower:]')
           echo "VARIANT_FLAVOR=$VARIANT_FLAVOR" >> $GITHUB_ENV
           echo "VARIANT_TYPE=$VARIANT_TYPE" >> $GITHUB_ENV
+          # The wear module has no fullb/fullc/fulld flavours; skip the watch APK for those.
+          case "$VARIANT_FLAVOR" in fullb|fullc|fulld) BUILD_WEAR=false ;; *) BUILD_WEAR=true ;; esac
+          echo "BUILD_WEAR=$BUILD_WEAR" >> $GITHUB_ENV
           VERSION_SUFFIX=""
           if [[ "$VARIANT_FLAVOR" != "full" ]]; then VERSION_SUFFIX="$VARIANT_FLAVOR"; fi
           if [[ "$VARIANT_TYPE" == "debug" ]]; then VERSION_SUFFIX="$VERSION_SUFFIX-debug"; fi
@@ -193,7 +199,9 @@ jobs:
 
       - name: Build APKs
         run: |
-              ./gradlew :app:assemble${{ env.BUILD_VARIANT }} :wear:assemble${{ env.BUILD_VARIANT }} \
+              WEAR_TASK=""
+              if [[ "$BUILD_WEAR" == "true" ]]; then WEAR_TASK=":wear:assemble${{ env.BUILD_VARIANT }}"; fi
+              ./gradlew :app:assemble${{ env.BUILD_VARIANT }} $WEAR_TASK \
               -Dorg.gradle.jvmargs="-Xmx8g -XX:+UseParallelGC -Xss1024m" \
               -Dkotlin.daemon.jvm.options="-Xmx2g" \
               -Dkotlin.compiler.execution.strategy="in-process" \
@@ -208,7 +216,9 @@ jobs:
       - name: Rename APKs with version
         run: |
           mv app/build/outputs/apk/${{ env.VARIANT_FLAVOR }}/${{ env.VARIANT_TYPE }}/*.apk aaps-${{ env.VERSION }}${{ env.VERSION_SUFFIX }}.apk
-          mv wear/build/outputs/apk/${{ env.VARIANT_FLAVOR }}/${{ env.VARIANT_TYPE }}/*.apk aaps-wear-${{ env.VERSION }}${{ env.VERSION_SUFFIX }}.apk
+          if [[ "$BUILD_WEAR" == "true" ]]; then
+            mv wear/build/outputs/apk/${{ env.VARIANT_FLAVOR }}/${{ env.VARIANT_TYPE }}/*.apk aaps-wear-${{ env.VERSION }}${{ env.VERSION_SUFFIX }}.apk
+          fi
 
       - name: Upload APKs to Google Drive
         run: |
@@ -291,7 +301,9 @@ jobs:
           }
 
           upload_to_gdrive "aaps-${VERSION}${VERSION_SUFFIX}.apk" "aaps-${VERSION}${VERSION_SUFFIX}.apk"
-          upload_to_gdrive "aaps-wear-${VERSION}${VERSION_SUFFIX}.apk" "aaps-wear-${VERSION}${VERSION_SUFFIX}.apk"
+          if [[ "$BUILD_WEAR" == "true" ]]; then
+            upload_to_gdrive "aaps-wear-${VERSION}${VERSION_SUFFIX}.apk" "aaps-wear-${VERSION}${VERSION_SUFFIX}.apk"
+          fi
 
           echo "🎉 APKs successfully uploaded to Google Drive!"
 
