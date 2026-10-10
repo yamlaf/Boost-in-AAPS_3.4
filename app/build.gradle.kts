@@ -140,6 +140,7 @@ android {
             dimension = "standard"
             resValue("string", "app_name", "AAPS B")
             versionName = Versions.appVersion + "-b"
+            buildConfigField("String", "VERSION", "\"${Versions.appVersion}-b\"")
             manifestPlaceholders["appIcon"] = "@mipmap/ic_yellowowl"
             manifestPlaceholders["appIconRound"] = "@mipmap/ic_yellowowl"
         }
@@ -148,6 +149,7 @@ android {
             dimension = "standard"
             resValue("string", "app_name", "AAPS C")
             versionName = Versions.appVersion + "-c"
+            buildConfigField("String", "VERSION", "\"${Versions.appVersion}-c\"")
             manifestPlaceholders["appIcon"] = "@mipmap/ic_blueowl"
             manifestPlaceholders["appIconRound"] = "@mipmap/ic_blueowl"
         }
@@ -156,6 +158,7 @@ android {
             dimension = "standard"
             resValue("string", "app_name", "AAPS D")
             versionName = Versions.appVersion + "-d"
+               buildConfigField("String", "VERSION", "\"${Versions.appVersion}-d\"")
             manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
             manifestPlaceholders["appIconRound"] = "@mipmap/ic_launcher_round"
         }
