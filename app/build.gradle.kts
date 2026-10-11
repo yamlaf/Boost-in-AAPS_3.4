@@ -126,6 +126,7 @@ android {
             dimension = "standard"
             resValue("string", "app_name", "AAPS")
             versionName = Versions.appVersion
+            buildConfigField("String", "VERSION", "\"${Versions.appVersion}-dev\"")
             manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
             manifestPlaceholders["appIconRound"] = "@mipmap/ic_launcher_round"
         }
